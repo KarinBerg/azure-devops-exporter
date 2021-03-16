@@ -70,11 +70,13 @@ Metrics
 | `azure_devops_project_info`                     | live/projects | Project informations                                                                 |
 | `azure_devops_build_latest_info`                | live          | Latest build information                                                             |
 | `azure_devops_build_latest_status`              | live          | Latest build status informations                                                     |
+| `azure_devops_build_latest_timeline_info`       | live          | Latest build timeline information (see https://docs.microsoft.com/en-us/rest/api/azure/devops/build/timeline) |
 | `azure_devops_pullrequest_info`                 | pullrequest   | Active PullRequests                                                                  |
 | `azure_devops_pullrequest_status`               | pullrequest   | Status informations (eg. created date) for active PullRequests                       |
 | `azure_devops_pullrequest_label`                | pullrequest   | Labels set on active PullRequests                                                    |
 | `azure_devops_build_info`                       | build         | Build informations                                                                   |
 | `azure_devops_build_status`                     | build         | Build status infos (queued, started, finished time)                                  |
+| `azure_devops_build_timeline_info`              | build         | Build timeline infos (see https://docs.microsoft.com/en-us/rest/api/azure/devops/build/timeline) |
 | `azure_devops_build_definition_info`            | build         | Build definition info                                                                |
 | `azure_devops_release_info`                     | release       | Release informations                                                                 |
 | `azure_devops_release_artifact`                 | release       | Release artifcact informations                                                       |

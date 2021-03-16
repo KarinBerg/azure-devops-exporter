@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	devopsClient "github.com/webdevops/azure-devops-exporter/azure-devops-client"
@@ -14,6 +15,7 @@ type MetricsCollectorLatestBuild struct {
 	prometheus struct {
 		build       *prometheus.GaugeVec
 		buildStatus *prometheus.GaugeVec
+		timeline    *prometheus.GaugeVec
 	}
 }
 
@@ -46,7 +48,7 @@ func (m *MetricsCollectorLatestBuild) Setup(collector *CollectorProject) {
 	m.prometheus.buildStatus = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "azure_devops_build_latest_status",
-			Help: "Azure DevOps build (latest)",
+			Help: "Azure DevOps build status (latest)",
 		},
 		[]string{
 			"projectID",
@@ -56,11 +58,83 @@ func (m *MetricsCollectorLatestBuild) Setup(collector *CollectorProject) {
 		},
 	)
 	prometheus.MustRegister(m.prometheus.buildStatus)
+
+	m.prometheus.timeline = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "azure_devops_build_timeline_latest_info",
+			Help: "Azure DevOps build timeline (latest)",
+		},
+		[]string{
+			"projectID",
+			"buildDefinitionID",
+			"buildID",
+			"agentPoolID",
+			"buildNumber",
+			"buildName",
+			"status",
+			"reason",
+			"result",
+			"recordId",
+			"recordParentId",
+			"recordType",
+			"recordName",
+			"recordStartTime",
+			"recordFinishTime",
+			"recordDuration",
+			"recordState",
+			"recordResult",
+			"recordWorkerName",
+			"recordOrder",
+			"recordErrorCount",
+			"recordWarningCount",
+			"recordLogUrl",
+		},
+	)
+	prometheus.MustRegister(m.prometheus.timeline)
 }
 
 func (m *MetricsCollectorLatestBuild) Reset() {
 	m.prometheus.build.Reset()
 	m.prometheus.buildStatus.Reset()
+	m.prometheus.timeline.Reset()
+}
+
+func (m *MetricsCollectorLatestBuild) collectTimelines(buildTimelineMetric *prometheusCommon.MetricList, logger *log.Entry, project devopsClient.Project, build devopsClient.Build) {
+	logger.Debug("Query timeline for build '", build.Definition.Name, "'")
+
+	timeline, err := AzureDevopsClient.GetTimeline(project.Id, build.Id)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	for _, record := range timeline.Records {
+		buildTimelineMetric.AddInfo(prometheus.Labels{
+			"projectID":          project.Id,
+			"buildDefinitionID":  int64ToString(build.Definition.Id),
+			"buildID":            int64ToString(build.Id),
+			"buildNumber":        build.BuildNumber,
+			"buildName":          build.Definition.Name,
+			"agentPoolID":        int64ToString(build.Queue.Pool.Id),
+			"status":             build.Status,
+			"reason":             build.Reason,
+			"result":             build.Result,
+			"recordId":           record.Id,
+			"recordParentId":     record.ParentId,
+			"recordType":         record.Type,
+			"recordName":         record.Name,
+			"recordStartTime":    record.StartTimestamp,
+			"recordFinishTime":   record.FinishTimestamp,
+			"recordDuration":     record.Duration(),
+			"recordState":        record.State,
+			"recordResult":       record.Result,
+			"recordWorkerName":   record.WorkerName,
+			"recordOrder":        int64ToString(record.Order),
+			"recordErrorCount":   int64ToString(record.ErrorCount),
+			"recordWarningCount": int64ToString(record.WarningCount),
+			"recordLogUrl":       record.LogUrl,
+		})
+	}
 }
 
 func (m *MetricsCollectorLatestBuild) Collect(ctx context.Context, logger *log.Entry, callback chan<- func(), project devopsClient.Project) {
@@ -72,8 +146,12 @@ func (m *MetricsCollectorLatestBuild) Collect(ctx context.Context, logger *log.E
 
 	buildMetric := prometheusCommon.NewMetricsList()
 	buildStatusMetric := prometheusCommon.NewMetricsList()
+	buildTimelineMetric := prometheusCommon.NewMetricsList()
 
 	for _, build := range list.List {
+
+		m.collectTimelines(buildTimelineMetric, logger, project, build)
+
 		buildMetric.AddInfo(prometheus.Labels{
 			"projectID":         project.Id,
 			"buildDefinitionID": int64ToString(build.Definition.Id),
@@ -122,5 +200,6 @@ func (m *MetricsCollectorLatestBuild) Collect(ctx context.Context, logger *log.E
 	callback <- func() {
 		buildMetric.GaugeSet(m.prometheus.build)
 		buildStatusMetric.GaugeSet(m.prometheus.buildStatus)
+		buildTimelineMetric.GaugeSet(m.prometheus.timeline)
 	}
 }
