@@ -17,7 +17,8 @@ type AzureDevopsClient struct {
 	collection   *string
 	accessToken  *string
 
-	HostUrl *string
+	HostUrl  *string
+	ProxyUrl *string
 
 	ApiVersion string
 
@@ -94,11 +95,17 @@ func (c *AzureDevopsClient) SetAccessToken(token string) {
 func (c *AzureDevopsClient) rest() *resty.Client {
 	if c.restClient == nil {
 		c.restClient = resty.New()
+
 		if c.HostUrl != nil {
 			c.restClient.SetHostURL(*c.HostUrl)
 		} else {
 			c.restClient.SetHostURL(fmt.Sprintf("https://dev.azure.com/%v/", *c.organization))
 		}
+
+		if c.ProxyUrl != nil {
+			c.restClient.SetProxy(*c.ProxyUrl)
+		}
+
 		c.restClient.SetHeader("Accept", "application/json")
 		c.restClient.SetBasicAuth("", *c.accessToken)
 		c.restClient.SetRetryCount(c.RequestRetries)

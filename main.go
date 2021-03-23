@@ -161,6 +161,10 @@ func initAzureDevOpsConnection() {
 		AzureDevopsClient.HostUrl = opts.AzureDevops.Url
 	}
 
+	if opts.AzureDevops.ProxyUrl != nil {
+		AzureDevopsClient.ProxyUrl = opts.AzureDevops.ProxyUrl
+	}
+
 	log.Infof("using organization: %v", opts.AzureDevops.Organisation)
 	log.Infof("using apiversion: %v", opts.AzureDevops.ApiVersion)
 	log.Infof("using concurrency: %v", opts.Request.ConcurrencyLimit)
