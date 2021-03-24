@@ -15,6 +15,12 @@ type Timeline struct {
 	BuildId                int64
 }
 
+type Log struct {
+	Id   int64  `json:"id"`
+	Type string `json:"type"`
+	Url  string `json:"url"`
+}
+
 type TimelineRecord struct {
 	Type            string  `json:"type"`
 	Name            string  `json:"name"`
@@ -28,7 +34,7 @@ type TimelineRecord struct {
 	Order           int64   `json:"order"`
 	ErrorCount      int64   `json:"errorCount"`
 	WarningCount    int64   `json:"warningCount"`
-	LogUrl          string  `json:"log.url"`
+	Log             Log     `json:"log"`
 	Issues          []Issue `json:"issues"`
 }
 

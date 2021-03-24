@@ -96,7 +96,9 @@ func (m *MetricsCollectorBuild) Setup(collector *CollectorProject) {
 			"agentPoolID",
 			"buildNumber",
 			"buildName",
+			"sourceBranch",
 			"status",
+			"buildUrl",
 			"reason",
 			"result",
 			"recordId",
@@ -171,8 +173,10 @@ func (m *MetricsCollectorBuild) collectTimelines(buildTimelineMetric *prometheus
 			"buildID":            int64ToString(build.Id),
 			"buildNumber":        build.BuildNumber,
 			"buildName":          build.Definition.Name,
+			"sourceBranch":       build.SourceBranch,
 			"agentPoolID":        int64ToString(build.Queue.Pool.Id),
 			"status":             build.Status,
+			"buildUrl":           build.Url,
 			"reason":             build.Reason,
 			"result":             build.Result,
 			"recordId":           record.Id,
@@ -188,7 +192,7 @@ func (m *MetricsCollectorBuild) collectTimelines(buildTimelineMetric *prometheus
 			"recordOrder":        int64ToString(record.Order),
 			"recordErrorCount":   int64ToString(record.ErrorCount),
 			"recordWarningCount": int64ToString(record.WarningCount),
-			"recordLogUrl":       record.LogUrl,
+			"recordLogUrl":       record.Log.Url,
 		})
 	}
 }
