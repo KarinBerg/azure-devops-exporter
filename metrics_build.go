@@ -62,6 +62,8 @@ func (m *MetricsCollectorBuild) Setup(collector *CollectorProject) {
 			"buildDefinitionID",
 			"buildNumber",
 			"type",
+			"result",
+			"sourceBranch",
 		},
 	)
 	prometheus.MustRegister(m.prometheus.buildStatus)
@@ -230,6 +232,8 @@ func (m *MetricsCollectorBuild) collectBuilds(ctx context.Context, logger *log.E
 			"buildDefinitionID": int64ToString(build.Definition.Id),
 			"buildNumber":       build.BuildNumber,
 			"type":              "succeeded",
+			"result":            build.Result,
+			"sourceBranch":      build.SourceBranch,
 		}, build.Result == "succeeded")
 
 		buildStatusMetric.AddTime(prometheus.Labels{
@@ -238,6 +242,8 @@ func (m *MetricsCollectorBuild) collectBuilds(ctx context.Context, logger *log.E
 			"buildDefinitionID": int64ToString(build.Definition.Id),
 			"buildNumber":       build.BuildNumber,
 			"type":              "queued",
+			"result":            build.Result,
+			"sourceBranch":      build.SourceBranch,
 		}, build.QueueTime)
 
 		buildStatusMetric.AddTime(prometheus.Labels{
@@ -246,6 +252,8 @@ func (m *MetricsCollectorBuild) collectBuilds(ctx context.Context, logger *log.E
 			"buildDefinitionID": int64ToString(build.Definition.Id),
 			"buildNumber":       build.BuildNumber,
 			"type":              "started",
+			"result":            build.Result,
+			"sourceBranch":      build.SourceBranch,
 		}, build.StartTime)
 
 		buildStatusMetric.AddTime(prometheus.Labels{
@@ -254,6 +262,8 @@ func (m *MetricsCollectorBuild) collectBuilds(ctx context.Context, logger *log.E
 			"buildDefinitionID": int64ToString(build.Definition.Id),
 			"buildNumber":       build.BuildNumber,
 			"type":              "finished",
+			"result":            build.Result,
+			"sourceBranch":      build.SourceBranch,
 		}, build.FinishTime)
 
 		buildStatusMetric.AddDuration(prometheus.Labels{
@@ -262,6 +272,8 @@ func (m *MetricsCollectorBuild) collectBuilds(ctx context.Context, logger *log.E
 			"buildDefinitionID": int64ToString(build.Definition.Id),
 			"buildNumber":       build.BuildNumber,
 			"type":              "jobDuration",
+			"result":            build.Result,
+			"sourceBranch":      build.SourceBranch,
 		}, build.FinishTime.Sub(build.StartTime))
 	}
 
